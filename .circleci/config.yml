@@ -8,10 +8,10 @@ jobs:
       - checkout
       - setup_remote_docker
       - restore_cache:
-        keys:
-          - v1-{{ .Branch }}
-        paths:
-          - /caches/app.tar
+          keys:
+            - v1-{{ .Branch }}
+          paths:
+            - /caches/app.tar
       - run:
           name: Load Docker image layer cache
           command: |
@@ -25,8 +25,14 @@ jobs:
           name: Save Docker image layer cache
           command: |
             mkdir -p /caches
-            docker save -o /caches/app.tar app
+            docker save -o /caches/app.tar abhijitp/amazonlinux-node
       - save_cache:
           key: v1-{{ .Branch }}-{{ epoch }}
           paths:
             - /caches/app.tar
+      - deploy:
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME
+              docker push abhijitp/amazonlinux-node
+            fi
